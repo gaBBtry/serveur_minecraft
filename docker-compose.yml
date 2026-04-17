@@ -1,0 +1,31 @@
+services:
+
+  mc-server:
+    image: itzg/minecraft-server:latest
+    container_name: mc-server
+    ports:
+      - "25565:25565/tcp" # Port Java
+      - "19132:19132/udp" # Port Bedrock
+    environment:
+      TYPE: "PAPER" # Type de serveur (Paper) : assez léger et rapide
+      EULA: "TRUE" # Accepte les conditions d'utilisation de Minecraft
+      MEMORY: "2G" # Sûrement suffisant pour 3 ou 4 joueurs
+      VERSION: "1.21.11" # Dernière version stable pour Paper
+      # Les prochains paramètres forcent ceux du fichier server.properties
+      MAX_TICK_TIME: "-1" # Tue le Watchdog de base (Minecraft)
+      SPIGOT_WATCHDOG_TIMEOUT: "0" # Tue le Watchdog de Spigot
+      PAPER_WATCHDOG_TIMEOUT: "0" # Tue le Watchdog de Paper
+      TZ: "Europe/Paris" # Timezone pour les logs
+      ENABLE_AUTOPAUSE: "TRUE" # Active la mise en pause automatique du serveur
+      AUTOPAUSE_TIMEOUT_INIT: "60" # Temps d'attente après démarrage du serveur
+      AUTOPAUSE_TIMEOUT_EST: "300" # Temps d'attente après déconnexion du dernier joueur
+      AUTOPAUSE_TIMEOUT_KNOCK: "600" # Temps d'attente après knock du serveur
+      MOTD: "Les couz jouent à Minecraft (1.21.11 si java, latest si bedrock)"
+      ENFORCE_SECURE_PROFILE: "false" # Permet de désactiver le chat sécurisé
+      ENABLE_WHITELIST: "TRUE" # Active la whitelist
+      ENFORCE_WHITELIST: "TRUE" # Force la whitelist
+      ONLINE_MODE: "true" # Active le mode en ligne
+    volumes:
+      - ./data:/data # Mount le dossier data dans le conteneur
+    restart: unless-stopped # Redémarre le conteneur si il crash
+    stop_grace_period: 1m # Temps d'attente avant de tuer le conteneur
