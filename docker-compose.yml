@@ -5,27 +5,53 @@ services:
     container_name: mc-server
     ports:
       - "25565:25565/tcp" # Port Java
-      - "19132:19132/udp" # Port Bedrock
+      - "19132:19132/udp" # Port Bedrock (via plugin Geyser installé dans data/plugins)
     environment:
       TYPE: "PAPER" # Type de serveur (Paper) : assez léger et rapide
       EULA: "TRUE" # Accepte les conditions d'utilisation de Minecraft
       MEMORY: "2G" # Sûrement suffisant pour 3 ou 4 joueurs
       VERSION: "1.21.11" # Dernière version stable pour Paper
-      # Les prochains paramètres forcent ceux du fichier server.properties
-      MAX_TICK_TIME: "-1" # Tue le Watchdog de base (Minecraft)
-      SPIGOT_WATCHDOG_TIMEOUT: "0" # Tue le Watchdog de Spigot
-      PAPER_WATCHDOG_TIMEOUT: "0" # Tue le Watchdog de Paper
       TZ: "Europe/Paris" # Timezone pour les logs
-      ENABLE_AUTOPAUSE: "TRUE" # Active la mise en pause automatique du serveur
-      AUTOPAUSE_TIMEOUT_INIT: "60" # Temps d'attente après démarrage du serveur
-      AUTOPAUSE_TIMEOUT_EST: "300" # Temps d'attente après déconnexion du dernier joueur
-      AUTOPAUSE_TIMEOUT_KNOCK: "600" # Temps d'attente après knock du serveur
+      # Les prochains paramètres forcent ceux du fichier server.properties
       MOTD: "Les couz jouent à Minecraft (1.21.11 si java, latest si bedrock)"
       ENFORCE_SECURE_PROFILE: "false" # Permet de désactiver le chat sécurisé
       ENABLE_WHITELIST: "TRUE" # Active la whitelist
       ENFORCE_WHITELIST: "TRUE" # Force la whitelist
       ONLINE_MODE: "true" # Active le mode en ligne
+      # ----------------------------------------------------------------------
+      # Installation automatique des plugins (DÉSACTIVÉ volontairement)
+      # ----------------------------------------------------------------------
+      # Actuellement, Geyser et Floodgate sont installés manuellement dans
+      # data/plugins/ (voir les .jar présents). Si un jour tu veux laisser
+      # l'image itzg gérer les téléchargements et mises à jour à la place,
+      # supprime les .jar manuels puis décommente les blocs ci-dessous.
+      #
+      # Option A - via la variable PLUGINS (liste d'URLs directes) :
+      # PLUGINS: |
+      #   https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot
+      #   https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
+      #
+      # Option B - via les "Auto-updating Plugins" (recommandée, recheck au
+      # démarrage via la page Modrinth du projet) :
+      # MODRINTH_PROJECTS: "geyser,floodgate"
+      # MODRINTH_ALLOWED_VERSION_TYPE: "release"
+      #
+      # Astuce : on peut aussi forcer la ré-installation à chaque démarrage
+      # avec REMOVE_OLD_MODS=TRUE + REMOVE_OLD_MODS_INCLUDE="Geyser-*.jar,floodgate-*.jar"
+      # mais attention, cela efface aussi les configs si mal paramétré.
     volumes:
-      - ./data:/data # Mount le dossier data dans le conteneur
-    restart: unless-stopped # Redémarre le conteneur si il crash
-    stop_grace_period: 1m # Temps d'attente avant de tuer le conteneur
+      - ./data:/data # Monte le dossier data dans le conteneur
+    restart: unless-stopped # Redémarre le conteneur s'il crash
+    stop_grace_period: 2m # Temps d'attente avant de tuer le conteneur (laisse le temps de sauvegarder)
+    # Healthcheck natif fourni par l'image itzg
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 3m # Laisse le temps au serveur de démarrer avant de le checker
+    # Limites de ressources pour éviter que le conteneur ne sature la machine
+    deploy:
+      resources:
+        limits:
+          memory: 2560M # ~500 Mo de marge au-dessus de MEMORY pour la JVM (metaspace, off-heap, etc.)
