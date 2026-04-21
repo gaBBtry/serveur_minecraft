@@ -8,15 +8,15 @@ services:
       - "19132:19132/udp" # Port Bedrock (via plugin Geyser installé dans data/plugins)
     environment:
       TYPE: "PAPER" # Type de serveur (Paper) : assez léger et rapide
-      EULA: "TRUE" # Accepte les conditions d'utilisation de Minecraft
+      EULA: "true" # Accepte les conditions d'utilisation de Minecraft
       MEMORY: "2G" # Sûrement suffisant pour 3 ou 4 joueurs
       VERSION: "1.21.11" # Dernière version stable pour Paper
       TZ: "Europe/Paris" # Timezone pour les logs
-      # Les prochains paramètres forcent ceux du fichier server.properties
+      # Les prochaines variables d'environnement écrasent les valeurs correspondantes dans server.properties à chaque rebuild du conteneur.
       MOTD: "Les couz jouent à Minecraft (1.21.11 si java, latest si bedrock)"
       ENFORCE_SECURE_PROFILE: "false" # Permet de désactiver le chat sécurisé
-      ENABLE_WHITELIST: "TRUE" # Active la whitelist
-      ENFORCE_WHITELIST: "TRUE" # Force la whitelist
+      ENABLE_WHITELIST: "true" # Active la whitelist
+      ENFORCE_WHITELIST: "true" # Force la whitelist
       ONLINE_MODE: "true" # Active le mode en ligne
       # ----------------------------------------------------------------------
       # Installation automatique des plugins (DÉSACTIVÉ volontairement)
@@ -45,7 +45,7 @@ services:
     stop_grace_period: 2m # Temps d'attente avant de tuer le conteneur (laisse le temps de sauvegarder)
     # Healthcheck natif fourni par l'image itzg
     healthcheck:
-      test: ["CMD", "mc-health"]
+      test: [ "CMD", "mc-health" ]
       interval: 30s
       timeout: 10s
       retries: 3
