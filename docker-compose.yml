@@ -18,6 +18,11 @@ services:
       ENABLE_WHITELIST: "true" # Active la whitelist
       ENFORCE_WHITELIST: "true" # Force la whitelist
       ONLINE_MODE: "true" # Active le mode en ligne
+      # Whitelist versionnée dans le repo (./config/whitelist.json, montée en lecture seule).
+      # itzg la copie dans /data/whitelist.json à chaque démarrage, ce qui garantit que les
+      # 4 joueurs autorisés sont toujours présents, même après un clone ou un reset de ./data.
+      WHITELIST_FILE: "/config/whitelist.json"
+      OVERRIDE_WHITELIST: "TRUE" # Écrase /data/whitelist.json au démarrage avec le fichier ci-dessus
       # ----------------------------------------------------------------------
       # Installation automatique des plugins (DÉSACTIVÉ volontairement)
       # ----------------------------------------------------------------------
@@ -41,6 +46,7 @@ services:
       # mais attention, cela efface aussi les configs si mal paramétré.
     volumes:
       - ./data:/data # Monte le dossier data dans le conteneur
+      - ./config/whitelist.json:/config/whitelist.json:ro # Whitelist de référence (versionnée dans Git)
     restart: unless-stopped # Redémarre le conteneur s'il crash
     stop_grace_period: 2m # Temps d'attente avant de tuer le conteneur (laisse le temps de sauvegarder)
     # Healthcheck natif fourni par l'image itzg
